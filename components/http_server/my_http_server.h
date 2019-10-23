@@ -18,9 +18,9 @@
 #pragma once
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
-
 
 /**
  * @file http_server.h
@@ -29,44 +29,47 @@ extern "C" {
 
 /* Pull in the definitions of HTTP methods */
 #include <stdbool.h>
-#include "http_parser.h"
+#include <esp_http_server.h>
+//#include "http_parser.h"
 #include "esp_err.h"
 /**
  * Bit masks for events to be passed to a handler
  */
-#define HTTP_HANDLE_URI         BIT(0)      /*!< Called when URI is received */
-#define HTTP_HANDLE_HEADERS     BIT(1)      /*!< Called when all headers are received */
-#define HTTP_HANDLE_DATA        BIT(2)      /*!< Called each time a fragment of request body is received */
-#define HTTP_HANDLE_RESPONSE    BIT(3)      /*!< Called at the end of the request to produce the response */
+#define HTTP_HANDLE_URI BIT(0)      /*!< Called when URI is received */
+#define HTTP_HANDLE_HEADERS BIT(1)  /*!< Called when all headers are received */
+#define HTTP_HANDLE_DATA BIT(2)     /*!< Called each time a fragment of request body is received */
+#define HTTP_HANDLE_RESPONSE BIT(3) /*!< Called at the end of the request to produce the response */
 
-/** Opaque type representing single HTTP connection */
-typedef struct http_context_* http_context_t;
+    /** Opaque type representing single HTTP connection */
+    typedef struct http_context_ *http_context_t;
 
-/** Opaque type representing HTTP server */
-typedef struct http_server_context_* http_server_t;
+    /** Opaque type representing HTTP server */
+    typedef struct http_server_context_ *http_server_t;
 
-/** Callback type of HTTP request handler */
-typedef void (* http_handler_fn_t)(http_context_t http_ctx, void* ctx);
+    /** Callback type of HTTP request handler */
+    typedef void (*http_handler_fn_t)(http_context_t http_ctx, void *ctx);
 
-/**
+    /**
  * @brief Configuration of the HTTP server
  */
-typedef struct {
-    int port;               /*!< TCP Port to listen on */
-    int task_affinity;      /*!< Server task affinity (CPU number of tskNO_AFFINITY */
-    int task_stack_size;    /*!< Server task stack size, in bytes */
-    int task_priority;      /*!< Server task priority */
-} http_server_options_t;
+    typedef struct
+    {
+        int port;            /*!< TCP Port to listen on */
+        int task_affinity;   /*!< Server task affinity (CPU number of tskNO_AFFINITY */
+        int task_stack_size; /*!< Server task stack size, in bytes */
+        int task_priority;   /*!< Server task priority */
+    } http_server_options_t;
 
 /** Default initializer for http_server_options_t */
-#define HTTP_SERVER_OPTIONS_DEFAULT()  {\
-    .port = 80, \
-    .task_affinity = tskNO_AFFINITY, \
-    .task_stack_size = 4096, \
-    .task_priority = 1, \
-}
+#define HTTP_SERVER_OPTIONS_DEFAULT()    \
+    {                                    \
+        .port = 80,                      \
+        .task_affinity = tskNO_AFFINITY, \
+        .task_stack_size = 4096,         \
+        .task_priority = 1,              \
+    }
 
-/**
+    /**
  * @brief initialize HTTP server, start listening
  * @param options  pointer to http server options, can point to a temporary
  * @param[out] output, handle of the server; pass it to http_server_stop do
@@ -76,17 +79,17 @@ typedef struct {
  *  - ESP_ERR_NO_MEM if out of RAM
  *  - ESP_FAIL if some other error
  */
-esp_err_t http_server_start(const http_server_options_t* options, http_server_t* out_server);
+    esp_err_t http_server_start(const http_server_options_t *options, http_server_t *out_server);
 
-/**
+    /**
  * @brief Stop the previously started server
  * @param server handle obtained from http_server_start
  * @return
  *  - ESP_OK on success
  */
-esp_err_t http_server_stop(http_server_t server);
+    esp_err_t http_server_stop(http_server_t server);
 
-/**
+    /**
  * @brief Register a handler for certain URI
  *
  * The handler will be called when a client makes a request with matching URI
@@ -105,10 +108,10 @@ esp_err_t http_server_stop(http_server_t server);
  *  - ESP_OK on success
  *  - ESP_ERR_NO_MEM if out of memory
  */
-esp_err_t http_register_handler(http_server_t server, const char* uri_pattern, int method,
-                                int events, http_handler_fn_t callback, void* callback_arg);
+    esp_err_t http_register_handler(http_server_t server, const char *uri_pattern, int method,
+                                    int events, http_handler_fn_t callback, void *callback_arg);
 
-/**
+    /**
  * @brief Register a handler for application/x-www-form-urlencoded requests
  *
  * Unlike http_register_handler, handlers registered using this function will
@@ -128,32 +131,32 @@ esp_err_t http_register_handler(http_server_t server, const char* uri_pattern, i
  *  - ESP_OK on success
  *  - ESP_ERR_NO_MEM if out of memory
  */
-esp_err_t http_register_form_handler(http_server_t server, const char* uri_pattern, int method,
-                                    int events, http_handler_fn_t callback, void* callback_arg);
+    esp_err_t http_register_form_handler(http_server_t server, const char *uri_pattern, int method,
+                                         int events, http_handler_fn_t callback, void *callback_arg);
 
-/**
+    /**
  * @brief Get value for given form item name
  * @param http_ctx  context passed to the handler
  * @param name  name of form item
  * @return  pointer to the form item value, valid until the end of request
  */
-const char* http_request_get_form_value(http_context_t http_ctx, const char* name);
+    const char *http_request_get_form_value(http_context_t http_ctx, const char *name);
 
-/**
+    /**
  * @brief Get request method
  * @param http_ctx  context passed to the handler
  * @return one of HTTP_GET, HTTP_POST, etc
  */
-int http_request_get_method(http_context_t http_ctx);
+    int http_request_get_method(http_context_t http_ctx);
 
-/**
+    /**
  * @brief Get URI present in the request
  * @param http_ctx  context passed to the handler
  * @return pointer to the URI, valid until the end of request
  */
-const char* http_request_get_uri(http_context_t http_ctx);
+    const char *http_request_get_uri(http_context_t http_ctx);
 
-/**
+    /**
  * @brief Get request header
  * @param http_ctx  context passed to the handler
  * @param name header name
@@ -162,16 +165,16 @@ const char* http_request_get_uri(http_context_t http_ctx);
  *    pointer to the value; valid until request callback returns.
  *  - Otherwise, returns NULL
  */
-const char* http_request_get_header(http_context_t ctx, const char* name);
+    const char *http_request_get_header(http_context_t ctx, const char *name);
 
-/**
+    /**
  * @brief Get the event which caused a call to the handler
  * @param ctx  context passed to the handler
  * @return  one of HTTP_HANDLE_X values
  */
-int http_request_get_event(http_context_t ctx);
+    int http_request_get_event(http_context_t ctx);
 
-/**
+    /**
  * @brief Get the request body fragment
  * To be used when handling HTTP_HANDLE_DATA event.
  *
@@ -182,21 +185,21 @@ int http_request_get_event(http_context_t ctx);
  *      - ESP_OK on success
  *      - ESP_ERR_INVALID_STATE if called for events other than HTTP_HANDLE_DATA
  */
-esp_err_t http_request_get_data(http_context_t ctx, const char** out_data_ptr, size_t* out_size);
+    esp_err_t http_request_get_data(http_context_t ctx, const char **out_data_ptr, size_t *out_size);
 
-
-/**
+    /**
  * @brief structure describing a part of the response to be sent
  */
-typedef struct {
-    const void* data;     /*!< pointer to data to be sent */
-    size_t size;    /*!< size of data to send; if data is a 0-terminated string, size can be left 0 */
-    bool data_is_persistent;    /*!< set to true if data is in constant RAM */
-} http_buffer_t;
+    typedef struct
+    {
+        const void *data;        /*!< pointer to data to be sent */
+        size_t size;             /*!< size of data to send; if data is a 0-terminated string, size can be left 0 */
+        bool data_is_persistent; /*!< set to true if data is in constant RAM */
+    } http_buffer_t;
 
 #define HTTP_RESPONSE_SIZE_UNKNOWN SIZE_MAX
 
-/**
+    /**
  * @brief Begin writing HTTP response
  * @param http_ctx  context passed to the handler
  * @param code  HTTP response code
@@ -207,10 +210,10 @@ typedef struct {
  *      - ESP_ERR_NO_MEM if can't allocate temporary buffer
  *      - other errors from LwIP
  */
-esp_err_t http_response_begin(http_context_t http_ctx, int code,
-                              const char* content_type, size_t response_size);
+    esp_err_t http_response_begin(http_context_t http_ctx, int code,
+                                  const char *content_type, size_t response_size);
 
-/**
+    /**
  * @brief Add HTTP header to the response
  *
  * This function may be called between http_response_begin and http_response_write.
@@ -230,10 +233,10 @@ esp_err_t http_response_begin(http_context_t http_ctx, int code,
  *  - ESP_OK on success
  *  - ESP_ERR_NO_MEM if can't allocate memory for the header
  */
-esp_err_t http_response_set_header(http_context_t http_ctx,
-                                   const char* name, const char* val);
+    esp_err_t http_response_set_header(http_context_t http_ctx,
+                                       const char *name, const char *val);
 
-/**
+    /**
  * @brief Start one part of a multipart response
  *
  * For multipart responses, the sequence of calls is as follows:
@@ -254,10 +257,10 @@ esp_err_t http_response_set_header(http_context_t http_ctx,
  *  - ESP_ERR_NO_MEM if can't allocate memory
  *  - other errors from LwIP
  */
-esp_err_t http_response_begin_multipart(http_context_t http_ctx,
-                                const char* content_type, size_t response_size);
+    esp_err_t http_response_begin_multipart(http_context_t http_ctx,
+                                            const char *content_type, size_t response_size);
 
-/**
+    /**
  * @brief Indicate that one part of the multipart response is finished
  * @param http_ctx  context passed to the handler
  * @param boundary  part boundary. Has to be the same as given in the content-type of the first response.
@@ -265,9 +268,9 @@ esp_err_t http_response_begin_multipart(http_context_t http_ctx,
  *  - ESP_OK
  *  - other errors from LwIP
  */
-esp_err_t http_response_end_multipart(http_context_t http_ctx, const char* boundary);
+    esp_err_t http_response_end_multipart(http_context_t http_ctx, const char *boundary);
 
-/**
+    /**
  * @brief Send a piece of HTTP response to the client
  * @param http_ctx  context passed to the handler
  * @param buffer  data to send, see \ref http_buffer_t
@@ -275,16 +278,16 @@ esp_err_t http_response_end_multipart(http_context_t http_ctx, const char* bound
  *      - ESP_OK on success
  *      - other errors from LwIP
  */
-esp_err_t http_response_write(http_context_t http_ctx, const http_buffer_t* buffer);
+    esp_err_t http_response_write(http_context_t http_ctx, const http_buffer_t *buffer);
 
-/**
+    /**
  * @brief Indicate that response is complete
  * @param http_ctx  context passed to the handler
  * @return
  *      - ESP_OK on success
  *      - other errors in the future?
  */
-esp_err_t http_response_end(http_context_t http_ctx);
+    esp_err_t http_response_end(http_context_t http_ctx);
 
 #ifdef __cplusplus
 }
