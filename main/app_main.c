@@ -38,11 +38,18 @@
 
 static const char* TAG = "camera_qr_demo";
 
-static httpd_handle_t start_webserver(void);
-static void connect_handler(void* arg, esp_event_base_t event_base, 
-                               int32_t event_id, void* event_data);
-static void disconnect_handler(void* arg, esp_event_base_t event_base, 
-                               int32_t event_id, void* event_data);
+static const char* STREAM_CONTENT_TYPE =
+        "multipart/x-mixed-replace; boundary=123456789000000000000987654321";
+
+static const char* STREAM_BOUNDARY = "--123456789000000000000987654321";
+
+EventGroupHandle_t s_wifi_event_group;
+static const int CONNECTED_BIT = BIT0;
+static esp_ip4_addr_t s_ip_addr;
+static camera_pixelformat_t s_pixel_format;
+
+#define CAMERA_PIXEL_FORMAT CAMERA_PF_JPEG
+#define CAMERA_FRAME_SIZE CAMERA_FS_SVGA
 
 #define PART_BOUNDARY "123456789000000000000987654321"
 static const char* _STREAM_CONTENT_TYPE = "multipart/x-mixed-replace;boundary=" PART_BOUNDARY;
